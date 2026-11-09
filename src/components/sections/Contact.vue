@@ -2,8 +2,9 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import logo from '@/assets/logo.jpg'
 import { site } from '@/data/site'
-import { vMagnetic, vReveal } from '@/directives'
+import { vReveal } from '@/directives'
 import { useI18n } from '@/i18n'
+import { fontsReady } from '@/lib/fonts'
 import { gsap, prefersReducedMotion } from '@/lib/gsap'
 import LocalTime from '@/components/ui/LocalTime.vue'
 
@@ -44,8 +45,8 @@ onMounted(() => {
     if (wordmark.value && wordmark.value.clientWidth !== fitted) fitWordmark()
   })
   resizeWatch.observe(footer.value)
-  document.fonts?.ready.then(fitWordmark)
-  document.fonts?.addEventListener('loadingdone', fitWordmark)
+  // The brand fonts arrive after the first paint (src/lib/fonts.ts), and the letters change width with them
+  fontsReady.then(fitWordmark)
 
   if (prefersReducedMotion()) return
   ctx = gsap.context(() => {
@@ -56,7 +57,6 @@ onMounted(() => {
 })
 onBeforeUnmount(() => {
   resizeWatch?.disconnect()
-  document.fonts?.removeEventListener('loadingdone', fitWordmark)
   ctx?.revert()
 })
 </script>
@@ -73,7 +73,6 @@ onBeforeUnmount(() => {
       <h2 v-reveal class="type-night max-w-5xl text-[clamp(2.8rem,8vw,7.5rem)]">{{ t.contact.title }}</h2>
 
       <a
-        v-magnetic="0.25"
         :href="site.dm"
         target="_blank"
         rel="noopener noreferrer"

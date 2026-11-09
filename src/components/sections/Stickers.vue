@@ -3,8 +3,13 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { collaborators } from '@/data/site'
 import { useI18n } from '@/i18n'
 import { gsap, prefersReducedMotion } from '@/lib/gsap'
+import { useAfterFirstPaint } from '@/lib/paint'
 
 const { t } = useI18n()
+
+// Until the hero has painted, this section sits right under it, so even lazy images would start loading
+// ahead of the hero's own photos. Their sources are set afterwards, when the hero's pin has pushed it away.
+const settled = useAfterFirstPaint()
 
 // Crew logos as die-cut slap stickers, the way they end up on bumpers and windows at a meet.
 const tilts = [-8, 5, -3, 9, -6, 4, -10, 6, -2]
@@ -50,7 +55,7 @@ onBeforeUnmount(() => ctx?.revert())
           :style="{ rotate: `${tilts[i % tilts.length]}deg` }"
         >
           <img
-            :src="c.logo"
+            :src="settled ? c.logo : undefined"
             :alt="c.name"
             width="112"
             height="112"

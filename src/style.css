@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './fonts.css';
 
 /*
  * tofugao: Dan → Noć
@@ -34,8 +35,9 @@
 }
 
 @theme {
-  --font-sans: 'Mona Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-brand: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  /* The web fonts join in once they have loaded (src/lib/fonts.ts adds .fonts to <html>) */
+  --font-sans: var(--web-sans, ui-sans-serif), system-ui, sans-serif;
+  --font-brand: var(--web-brand, ui-sans-serif), system-ui, sans-serif;
 
   --color-paper: #f9f6ef;
   --color-ink: #000;
@@ -47,6 +49,11 @@
   --color-sprout-deep: #4b8a3c;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root.fonts {
+  --web-sans: 'Mona Sans';
+  --web-brand: 'Outfit';
 }
 
 @layer base {
@@ -235,6 +242,13 @@
     box-shadow 0.8s var(--ease-out-expo),
     filter 0.8s var(--ease-out-expo);
 }
+.lift-img-late {
+  opacity: 0;
+  transition: opacity 0.7s var(--ease-out-expo);
+}
+.lift-img-late.is-loaded {
+  opacity: 1;
+}
 .lift-sheen,
 .lift-glare,
 .lift-caption {
@@ -258,6 +272,10 @@
   z-index: 3;
   top: auto;
   padding: 3.5rem 1rem 0.9rem;
+  /* Stays in the system font until hovered: when the brand fonts arrive, text inside the photos
+     would change and repaint every photo, and a repaint after the first paint pushes the page's
+     largest-paint time later. */
+  font-family: ui-sans-serif, system-ui, sans-serif;
   color: #fff;
   background: linear-gradient(to top, rgb(0 0 0 / 0.78), transparent);
   opacity: 0;
@@ -294,6 +312,9 @@
   .lift-card:hover .lift-glare,
   .lift-card:hover .lift-caption {
     opacity: 1;
+  }
+  .lift-card:hover .lift-caption {
+    font-family: var(--font-sans);
   }
   .lift-card:hover .lift-line > span {
     transform: none;

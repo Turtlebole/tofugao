@@ -3,9 +3,11 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { Shot } from '@/data/projects'
 import { driveDay, driveNight } from '@/data/sets'
 import { site } from '@/data/site'
-import { vLift, vMagnetic } from '@/directives'
+import { vLift } from '@/directives'
 import { useI18n } from '@/i18n'
+import { fontsReady } from '@/lib/fonts'
 import { gsap, prefersReducedMotion, SplitText } from '@/lib/gsap'
+import { afterFirstPaint } from '@/lib/paint'
 
 const { t, tx, locale } = useI18n()
 
@@ -78,6 +80,20 @@ const clock = ref('12:00')
 const progress = { p: 0 } // position through the pinned hero, 0 → 1
 const intro = { offset: 0 } // extra distance for the load animation
 const still = prefersReducedMotion()
+
+// The first screen only shows the nearest photos. The rest wait until the page is idle (or the
+// visitor scrolls or touches it), so they don't compete with the first paint for bandwidth.
+const EAGER = 2
+const more = ref(false)
+// The photos that arrive after the first paint fade in instead of popping into the scene
+const fadeIn = (event: Event) => (event.target as HTMLElement).classList.add('is-loaded')
+function loadRestWhenIdle() {
+  const go = () => (more.value = true)
+  afterFirstPaint(go)
+  window.addEventListener('scroll', go, { once: true, passive: true })
+  window.addEventListener('pointerdown', go, { once: true, passive: true })
+}
+
 let cardEls: HTMLElement[] = []
 let parts: Record<string, HTMLElement | null> = {}
 let vw = window.innerWidth
@@ -89,6 +105,18 @@ const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
 const ramp = (p: number, start: number, length: number) => clamp01((p - start) / length)
 const mix = gsap.utils.interpolate
 
+// Every style written makes the browser recalculate styles, and render() runs on every frame. Most
+// of what it computes holds still for long stretches (the sky colours, the photos out of range), so
+// only the values that changed are written.
+const written = new WeakMap<HTMLElement, Map<string, string>>()
+function put(el: HTMLElement, prop: string, value: string) {
+  let last = written.get(el)
+  if (!last) written.set(el, (last = new Map()))
+  if (last.get(prop) === value) return
+  last.set(prop, value)
+  el.style.setProperty(prop, value)
+}
+
 function render() {
   const p = progress.p
   const el = root.value
@@ -98,19 +126,19 @@ function render() {
   const dawn = ramp(p, 0.86, 0.1)
   const dusk = ramp(p, 0.24, 0.14) * (1 - dawn)
   const night = ramp(p, 0.36, 0.12) * (1 - dawn)
-  if (parts.dusk) parts.dusk.style.opacity = dusk.toFixed(3)
-  if (parts.night) parts.night.style.opacity = night.toFixed(3)
-  el.style.setProperty('--hero-fg', mix(DAY.fg, NIGHT.fg, night))
-  el.style.setProperty('--hero-bg', mix(DAY.bg, NIGHT.bg, night))
-  el.style.setProperty('--hero-muted', mix(DAY.muted, NIGHT.muted, night))
-  if (parts.line2) parts.line2.style.opacity = still ? '1' : (0.14 + 0.86 * ramp(p, 0.42, 0.1)).toFixed(3)
+  if (parts.dusk) put(parts.dusk, 'opacity', dusk.toFixed(3))
+  if (parts.night) put(parts.night, 'opacity', night.toFixed(3))
+  put(el, '--hero-fg', mix(DAY.fg, NIGHT.fg, night))
+  put(el, '--hero-bg', mix(DAY.bg, NIGHT.bg, night))
+  put(el, '--hero-muted', mix(DAY.muted, NIGHT.muted, night))
+  if (parts.line2) put(parts.line2, 'opacity', still ? '1' : (0.14 + 0.86 * ramp(p, 0.42, 0.1)).toFixed(3))
   if (parts.lead) {
     const lead = still ? 1 : ramp(p, 0.88, 0.08)
-    parts.lead.style.opacity = lead.toFixed(3)
-    parts.lead.style.visibility = lead > 0 ? 'visible' : 'hidden'
-    parts.lead.style.transform = `translateY(${((1 - lead) * 24).toFixed(1)}px)`
+    put(parts.lead, 'opacity', lead.toFixed(3))
+    put(parts.lead, 'visibility', lead > 0 ? 'visible' : 'hidden')
+    put(parts.lead, 'transform', `translateY(${((1 - lead) * 24).toFixed(1)}px)`)
   }
-  if (parts.hint) parts.hint.style.opacity = (1 - ramp(p, 0.02, 0.05)).toFixed(3)
+  if (parts.hint) put(parts.hint, 'opacity', (1 - ramp(p, 0.02, 0.05)).toFixed(3))
 
   // 12:00 → 06:00 the next morning
   const minutes = Math.round(720 + clamp01(p) * 1080) % 1440
@@ -127,12 +155,12 @@ function render() {
     if (z > 150) o = Math.min(o, clamp01(1 - (z - 150) / 450))
     if (c.night) o *= nightGate
     if (o <= 0.001) {
-      if (card.style.visibility !== 'hidden') card.style.visibility = 'hidden'
+      put(card, 'visibility', 'hidden')
       continue
     }
-    card.style.visibility = 'visible'
-    card.style.opacity = o.toFixed(3)
-    card.style.transform = `translate3d(${((c.x * vw) / 100).toFixed(1)}px, ${((c.y * vh) / 100).toFixed(1)}px, ${z.toFixed(1)}px) rotate(${c.rot}deg)`
+    put(card, 'visibility', 'visible')
+    put(card, 'opacity', o.toFixed(3))
+    put(card, 'transform', `translate3d(${((c.x * vw) / 100).toFixed(1)}px, ${((c.y * vh) / 100).toFixed(1)}px, ${z.toFixed(1)}px) rotate(${c.rot}deg)`)
   }
 }
 
@@ -171,6 +199,7 @@ onMounted(() => {
   collectParts()
   window.addEventListener('resize', onResize)
   render()
+  loadRestWhenIdle()
   if (still) return
 
   ctx = gsap.context(() => {
@@ -190,12 +219,24 @@ onMounted(() => {
       },
     })
 
-    // Load: the photos glide in out of the haze while the day line rises
+    // Load: the photos glide in out of the haze (the text follows once the fonts are in, see revealText)
     gsap.from(intro, { offset: -0.12, duration: 2.6, ease: 'expo.out', onUpdate: render })
-    riseLetters()
-    gsap.from('[data-hero-fade]', { autoAlpha: 0, y: 16, stagger: 0.1, duration: 1.4, ease: 'expo.out', delay: 0.9 })
   }, root.value!)
 })
+
+// The headline and readouts stay hidden until the brand fonts are in, so they never show in the
+// wrong font. The sky and the photos don't wait.
+const textShown = ref(false)
+async function revealText() {
+  textShown.value = true
+  if (still || !ctx) return
+  await nextTick() // the classes are off before GSAP sets its starting state, so nothing flashes
+  ctx.add(() => {
+    riseLetters()
+    gsap.from('[data-hero-fade]', { autoAlpha: 0, y: 16, stagger: 0.1, duration: 1.4, ease: 'expo.out', delay: 0.5 })
+  })
+}
+fontsReady.then(revealText)
 
 watch(locale, async () => {
   await nextTick()
@@ -244,7 +285,7 @@ onBeforeUnmount(() => {
           on hover (see vLift) lives inside it, so the hovered area never changes under the cursor.
         -->
         <div
-          v-for="c in cards"
+          v-for="(c, i) in cards"
           :key="c.key"
           v-lift="80"
           data-card
@@ -252,7 +293,17 @@ onBeforeUnmount(() => {
           :style="{ '--s': c.size }"
         >
           <div data-lift class="lift-frame relative overflow-hidden rounded-xl" :style="{ aspectRatio: c.ratio }">
-            <img data-lift-img :src="c.src" alt="" draggable="false" class="h-full w-full object-cover" />
+            <img
+              data-lift-img
+              :src="i < EAGER || more ? c.src : undefined"
+              :fetchpriority="i < 2 ? 'high' : undefined"
+              alt=""
+              :decoding="i < EAGER ? 'sync' : 'async'"
+              draggable="false"
+              class="h-full w-full object-cover"
+              :class="{ 'lift-img-late': i >= EAGER }"
+              @load="i >= EAGER && fadeIn($event)"
+            />
             <span class="lift-sheen"></span>
             <span class="lift-glare"></span>
             <span class="lift-caption">
@@ -265,7 +316,12 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Time readout: the drive runs from noon to six in the morning -->
-    <div data-hero-fade class="pointer-events-none absolute top-24 right-5 z-10 text-right sm:top-28 sm:right-10" style="color: var(--hero-fg)">
+    <div
+      data-hero-fade
+      :class="{ invisible: !textShown }"
+      class="pointer-events-none absolute top-24 right-5 z-10 text-right sm:top-28 sm:right-10"
+      style="color: var(--hero-fg)"
+    >
       <p class="text-[13px]" style="color: var(--hero-muted)">{{ t.hero.city }}</p>
       <p class="type-day text-[clamp(1.6rem,3vw,2.6rem)] tabular-nums">{{ clock }}</p>
       <p data-hint class="mt-3 flex items-center justify-end gap-2 text-[13px]" style="color: var(--hero-muted)">
@@ -276,7 +332,7 @@ onBeforeUnmount(() => {
 
     <!-- Headline and actions. The layer lets the cursor through to the photos; only the buttons catch it. -->
     <div class="pointer-events-none relative z-10 flex h-full flex-col justify-end px-5 pb-8 sm:px-10 sm:pb-12">
-      <h1 :key="locale">
+      <h1 :key="locale" :class="{ invisible: !textShown }">
         <span data-line1 class="type-day block text-[clamp(2.4rem,7vw,7.5rem)]" style="color: var(--hero-fg)">
           {{ t.hero.line1 }}
         </span>
@@ -286,9 +342,8 @@ onBeforeUnmount(() => {
       </h1>
       <div class="mt-6 flex flex-wrap items-end justify-between gap-x-10 gap-y-5 sm:mt-8">
         <p data-lead class="max-w-[34rem] sm:text-lg" style="color: var(--hero-muted)">{{ t.hero.lead }}</p>
-        <div data-hero-fade class="pointer-events-auto flex flex-wrap items-center gap-x-8 gap-y-4">
+        <div data-hero-fade :class="{ invisible: !textShown }" class="pointer-events-auto flex flex-wrap items-center gap-x-8 gap-y-4">
           <a
-            v-magnetic="0.25"
             :href="site.dm"
             target="_blank"
             rel="noopener noreferrer"

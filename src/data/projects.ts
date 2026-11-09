@@ -61,7 +61,7 @@ export const projects: Project[] = (
       category: 'parties',
       date: '2026-10-23',
       credit: 'When We Were Young!',
-      cover: photo('cover-wwwy-halloween.jpg'),
+      cover: photo('cover-wwwy-halloween.avif'),
       post: ig('De1vlL9F__v'),
     },
     {
@@ -71,7 +71,7 @@ export const projects: Project[] = (
       category: 'cars',
       date: '2026-10-21',
       credit: { en: 'Honda Civic EG, with Auto JPG', sr: 'Honda Civic EG, sa Auto JPG' },
-      cover: photo('cover-civic-eg.jpg'),
+      cover: photo('cover-civic-eg.avif'),
       post: ig('DewkCRZCLuj'),
     },
     {
@@ -81,7 +81,7 @@ export const projects: Project[] = (
       category: 'cars',
       date: '2026-10-13',
       credit: 'Mercedes S-Class W220',
-      cover: photo('cover-monotony-kills.jpg'),
+      cover: photo('cover-monotony-kills.avif'),
       post: ig('DeeEPaDCLqK'),
     },
     {
@@ -91,7 +91,7 @@ export const projects: Project[] = (
       category: 'cars',
       date: '2026-10-01',
       credit: 'JDM Club Tomodachi NS',
-      cover: photo('cover-jdm-tomodachi.jpg'),
+      cover: photo('cover-jdm-tomodachi.avif'),
       post: ig('Dd8nytxjH-t'),
     },
     {
@@ -104,7 +104,7 @@ export const projects: Project[] = (
         en: 'DJ Night Mare at KC Lab, with mjauu.jpg',
         sr: 'DJ Night Mare u KC Labu, sa mjauu.jpg',
       },
-      cover: photo('cover-no-breaks.jpg'),
+      cover: photo('cover-no-breaks.avif'),
       post: ig('Dd6N21PiM1M'),
     },
     {
@@ -114,7 +114,7 @@ export const projects: Project[] = (
       category: 'cars',
       date: '2026-09-21',
       credit: 'Renault Twingo',
-      cover: photo('cover-twingo.jpg'),
+      cover: photo('cover-twingo.avif'),
       post: ig('Ddj_A1uHN7f'),
     },
     {
@@ -127,7 +127,7 @@ export const projects: Project[] = (
         en: 'When We Were Young! at KC Lab, with mjauu.jpg',
         sr: 'When We Were Young! u KC Labu, sa mjauu.jpg',
       },
-      cover: photo('cover-wwwy-kc-lab.jpg'),
+      cover: photo('cover-wwwy-kc-lab.avif'),
       post: ig('DdMaSJSl7l6'),
     },
     {
@@ -137,7 +137,7 @@ export const projects: Project[] = (
       category: 'cars',
       date: '2026-09-11',
       credit: 'Auto Moto Berza',
-      cover: photo('cover-amb-2.jpg'),
+      cover: photo('cover-amb-2.avif'),
       post: ig('DdJM-gKjFZ-'),
     },
     {
@@ -147,7 +147,7 @@ export const projects: Project[] = (
       category: 'cars',
       date: '2026-09-09',
       credit: 'Auto Moto Berza',
-      cover: photo('cover-amb-1.jpg'),
+      cover: photo('cover-amb-1.avif'),
       post: ig('DdD1IxyjB9k'),
     },
     {
@@ -157,7 +157,7 @@ export const projects: Project[] = (
       category: 'parties',
       date: '2026-06-24',
       credit: { en: 'A year of work, 2025–2026', sr: 'Godina rada, 2025–2026' },
-      cover: photo('cover-one-year.jpg'),
+      cover: photo('cover-one-year.avif'),
       post: ig('DZ-bk-1jAam'),
     },
     {
@@ -170,7 +170,7 @@ export const projects: Project[] = (
         en: 'At Borisov atelje, with shutter_alek & mjauu.jpg',
         sr: 'U Borisov ateljeu, sa shutter_alek i mjauu.jpg',
       },
-      cover: photo('cover-wwwy-borisov.jpg'),
+      cover: photo('cover-wwwy-borisov.avif'),
       post: ig('DZ8DcsCF4If'),
     },
     {
@@ -180,7 +180,7 @@ export const projects: Project[] = (
       category: 'parties',
       date: '2025-10-01',
       credit: { en: 'Buč Kesidi at Leto na kampusu', sr: 'Buč Kesidi na Letu na kampusu' },
-      cover: photo('cover-buc-kesidi.jpg'),
+      cover: photo('cover-buc-kesidi.avif'),
       post: ig('DPQufPlDA2D'),
     },
   ] satisfies Project[]
@@ -189,7 +189,7 @@ export const projects: Project[] = (
 const allShots: Shot[] = [
   {
     id: 'amb-bmw',
-    src: photo('cover-amb-1.jpg'),
+    src: photo('cover-amb-1.avif'),
     width: 444,
     height: 604,
     title: 'Auto Moto Berza 2026',
@@ -199,7 +199,7 @@ const allShots: Shot[] = [
   },
   {
     id: 'jdm-crx',
-    src: photo('jdm-tomodachi-crx.jpg'),
+    src: photo('jdm-tomodachi-crx.avif'),
     width: 436,
     height: 388,
     title: 'JDM Club Tomodachi NS',
@@ -209,7 +209,7 @@ const allShots: Shot[] = [
   },
   {
     id: 'buc-kesidi',
-    src: photo('cover-buc-kesidi.jpg'),
+    src: photo('cover-buc-kesidi.avif'),
     width: 480,
     height: 640,
     title: 'Buč Kesidi',
@@ -219,7 +219,7 @@ const allShots: Shot[] = [
   },
   {
     id: 'w220',
-    src: photo('cover-monotony-kills.jpg'),
+    src: photo('cover-monotony-kills.avif'),
     width: 480,
     height: 640,
     title: 'Monotony kills',
@@ -229,7 +229,7 @@ const allShots: Shot[] = [
   },
   {
     id: 'wwwy-crowd',
-    src: photo('wwwy-kc-lab-crowd.jpg'),
+    src: photo('wwwy-kc-lab-crowd.avif'),
     width: 480,
     height: 246,
     title: 'When We Were Young!',
@@ -239,7 +239,7 @@ const allShots: Shot[] = [
   },
   {
     id: 'amb-detail',
-    src: photo('cover-amb-2.jpg'),
+    src: photo('cover-amb-2.avif'),
     width: 444,
     height: 604,
     title: 'Auto Moto Berza 2026',
@@ -249,7 +249,7 @@ const allShots: Shot[] = [
   },
   {
     id: 'twingo',
-    src: photo('twingo.jpg'),
+    src: photo('twingo.avif'),
     width: 436,
     height: 296,
     title: 'Le twongi',
@@ -259,7 +259,7 @@ const allShots: Shot[] = [
   },
   {
     id: 'hand',
-    src: photo('one-year-hand.jpg'),
+    src: photo('one-year-hand.avif'),
     width: 428,
     height: 282,
     title: { en: 'One year of tofugao', sr: 'tofugao, prva godina' },

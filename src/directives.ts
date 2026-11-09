@@ -30,41 +30,6 @@ export const vReveal: Directive<HTMLElement, number | undefined, 'image'> = {
 }
 
 /**
- * Magnetic hover: the element leans toward the cursor. Value = strength (default 0.3).
- * Skipped on touch screens and when the visitor prefers reduced motion.
- */
-export const vMagnetic: Directive<HTMLElement, number | undefined> = {
-  mounted(el, { value }) {
-    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches
-    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!fine || calm) return
-
-    const strength = value ?? 0.3
-    const toX = gsap.quickTo(el, 'x', { duration: 0.8, ease: 'elastic.out(1, 0.5)' })
-    const toY = gsap.quickTo(el, 'y', { duration: 0.8, ease: 'elastic.out(1, 0.5)' })
-    const move = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect()
-      toX((e.clientX - (r.left + r.width / 2)) * strength)
-      toY((e.clientY - (r.top + r.height / 2)) * strength)
-    }
-    const leave = () => {
-      toX(0)
-      toY(0)
-    }
-    el.addEventListener('pointermove', move)
-    el.addEventListener('pointerleave', leave)
-    cleanups.set(el, () => {
-      el.removeEventListener('pointermove', move)
-      el.removeEventListener('pointerleave', leave)
-    })
-  },
-  unmounted(el) {
-    cleanups.get(el)?.()
-    cleanups.delete(el)
-  },
-}
-
-/**
  * Hover for a photo hung in a 3D scene (the hero's night drive): the print jumps toward you with
  * a spring, leans toward the cursor and follows it a little, while its picture slides the other
  * way for depth. Value = how far it jumps toward you, in px (default 80).
