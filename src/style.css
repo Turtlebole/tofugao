@@ -1,0 +1,344 @@
+@import 'tailwindcss';
+
+/*
+ * tofugao: Dan → Noć
+ *
+ * The page goes from day to night as you scroll (see App.vue). Every surface reads its colour
+ * from the variables below, and GSAP scrubs them from the day values to the night values.
+ *
+ * Type     Mona Sans only. Day is wide, upright and heavy; night is narrow, italic and heavy.
+ *          Outfit appears only in the tofugao wordmark (his logo font).
+ * Colour   Day: his cream paper, black ink, Spoon yellow from the CR-X livery.
+ *          Night: near-black, cream text, stage blue, club red, WWWY green. Gradients only at night.
+ */
+
+:root {
+  --bg: #f9f6ef;
+  --fg: #000000;
+  --muted: #6e6a63;
+  --line: #e3ddd1;
+  --card: #efe9de;
+  --accent: #f5c400;
+  --on-accent: #000000;
+  --grain: 0.05;
+}
+
+@theme inline {
+  --color-surface: var(--bg);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--muted);
+  --color-rule: var(--line);
+  --color-card: var(--card);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+}
+
+@theme {
+  --font-sans: 'Mona Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-brand: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #f9f6ef;
+  --color-ink: #000;
+  --color-night: #060606;
+  --color-sun: #f5c400;
+  --color-electric: #3b6cff;
+  --color-rose: #e0407e;
+  --color-sprout: #74a561;
+  --color-sprout-deep: #4b8a3c;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: 1.0625rem; /* 17px */
+    line-height: 1.6;
+    background: var(--bg);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  ::selection {
+    background: var(--color-electric);
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-electric);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+/* ---------- Type modes ---------- */
+
+/* Day: wide, upright, heavy */
+.type-day {
+  font-stretch: 112%;
+  font-weight: 800;
+  font-style: normal;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+}
+@media (min-width: 640px) {
+  .type-day {
+    font-stretch: 125%;
+  }
+}
+/* Night: narrow, italic, heavy */
+.type-night {
+  font-stretch: 75%;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  line-height: 0.9;
+}
+
+/* ---------- Surfaces ---------- */
+
+/* Only the floating header is frosted; it follows the time of day */
+.glass {
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid color-mix(in srgb, var(--fg) 9%, transparent);
+  box-shadow: 0 12px 32px -18px rgb(0 0 0 / 0.35);
+}
+
+/* Static film grain, a little stronger at night */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Night light ---------- */
+
+.text-gradient {
+  background: linear-gradient(100deg, #8fd47a, var(--color-electric) 40%, #ff5f9e 75%, #ffb86b);
+  background-size: 180% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-pan 9s ease-in-out infinite alternate;
+}
+.bg-club {
+  background: linear-gradient(130deg, var(--color-sprout-deep), var(--color-electric) 50%, var(--color-rose));
+  background-size: 200% 200%;
+  animation: gradient-pan 12s ease-in-out infinite alternate;
+}
+@keyframes gradient-pan {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+/* Soft light pools: radial gradients that only move, so nothing gets re-blurred while scrolling */
+.glows {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.glows > span {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, var(--c), transparent);
+  will-change: transform;
+  animation: drift 26s ease-in-out infinite alternate;
+}
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(7%, -5%, 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(-5%, 7%, 0) scale(0.94);
+  }
+}
+
+/* ---------- Hero: night drive ---------- */
+
+/* Button colours follow the sky (see Hero.vue: --hero-fg / --hero-bg) */
+.hero-cta {
+  background: var(--hero-fg);
+  color: var(--hero-bg);
+  transition:
+    background-color 0.5s var(--ease-out-expo),
+    color 0.5s var(--ease-out-expo);
+}
+.hero-cta:hover {
+  background: var(--color-sun);
+  color: #000;
+}
+
+/* A light running down the scroll hint */
+.hero-hint-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--hero-fg);
+  transform: translateY(-100%);
+  animation: hint-run 1.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes hint-run {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* ---------- Hover tilt (see vTilt in directives.ts) ---------- */
+
+.tilt {
+  will-change: rotate;
+}
+/* A soft light that follows the cursor across the photo */
+.tilt-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgb(255 255 255 / 0.32), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out-expo);
+}
+.tilt:hover .tilt-glare {
+  opacity: 1;
+}
+
+/* ---------- Hero photos: hover (see vLift in directives.ts) ---------- */
+
+/* Only the card takes the cursor, so what moves on hover never changes what is hovered */
+.lift-card > * {
+  pointer-events: none;
+}
+.lift-frame {
+  box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.6);
+  transition:
+    box-shadow 0.8s var(--ease-out-expo),
+    filter 0.8s var(--ease-out-expo);
+}
+.lift-sheen,
+.lift-glare,
+.lift-caption {
+  position: absolute;
+  inset: 0;
+}
+/* A band of light that sweeps across the photo when the cursor arrives */
+.lift-sheen {
+  z-index: 1;
+  background: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / 0.55) 50%, transparent 62%);
+  transform: translateX(-130%);
+}
+.lift-glare {
+  z-index: 2;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgb(255 255 255 / 0.34), transparent 58%);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out-expo);
+}
+/* Title and caption each rise out of a mask, one after the other, over a dark foot */
+.lift-caption {
+  z-index: 3;
+  top: auto;
+  padding: 3.5rem 1rem 0.9rem;
+  color: #fff;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.78), transparent);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out-expo);
+}
+.lift-line {
+  display: block;
+  overflow: hidden;
+  line-height: 1.4;
+}
+.lift-line > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 600;
+  transform: translateY(110%);
+  transition: transform 0.7s var(--ease-out-expo);
+}
+.lift-line-sub > span {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgb(255 255 255 / 0.75);
+  transition-delay: 0.07s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lift-card:hover .lift-frame {
+    box-shadow:
+      0 70px 90px -34px rgb(0 0 0 / 0.8),
+      0 0 0 1px rgb(255 255 255 / 0.2);
+  }
+  .lift-card:hover .lift-glare,
+  .lift-card:hover .lift-caption {
+    opacity: 1;
+  }
+  .lift-card:hover .lift-line > span {
+    transform: none;
+  }
+  /* While one photo is in your hand the rest step back */
+  .drive-scene:has(.lift-card:hover) .lift-card:not(:hover) .lift-frame {
+    filter: brightness(0.7) saturate(0.55);
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .lift-card:hover .lift-sheen {
+    animation: lift-sheen 1.1s var(--ease-out-expo) both;
+  }
+}
+@keyframes lift-sheen {
+  to {
+    transform: translateX(130%);
+  }
+}
+
+/* ---------- Misc ---------- */
+
+.link {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition: background-size 0.5s var(--ease-out-expo);
+}
+.link:hover,
+.link:focus-visible {
+  background-size: 100% 1px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s var(--ease-out-expo);
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glows > span,
+  .text-gradient,
+  .bg-club,
+  .hero-hint-line::after {
+    animation: none;
+  }
+}
